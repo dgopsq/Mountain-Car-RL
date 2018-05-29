@@ -20,7 +20,7 @@ class Agent:
     def __init__(self, Net, actions, position_bounds, velocity_bounds, learning_rate, discount_factor, greed_factor):
         # 2 inputs, len(actions) * 2 hidden nodes, len(actions) output
         self.net = Net(2, len(actions))
-        self.optimizer = torch.optim.SGD(self.net.parameters(), lr = learning_rate)
+        self.optimizer = torch.optim.Adam(self.net.parameters(), lr = learning_rate)
         self.loss_func = nn.SmoothL1Loss()
 
         # Q-function's discount factor
@@ -114,7 +114,7 @@ class Agent:
     # Return next action's index using epsilon-greedy
     def _get_next_action(self, q_values):
         if(rn.random() < self.epsilon):
-            return rn.randint(0, len(q_values) - 1)
+            return rn.randint(0, len(self.actions) - 1)
         else:
             return q_values.max(0)[1]
 
@@ -164,7 +164,7 @@ agent = Agent(
     velocity_bounds, # Velocity bounds
     0.1, # Learning rate
     0.99, # Discount factor
-    0.1 # Greed factor
+    0.2 # Greed factor
 )
 
 results = agent.learn()
