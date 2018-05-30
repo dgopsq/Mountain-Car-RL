@@ -28,21 +28,19 @@ class Agent:
     def learn(self):
         current_episode = 0
         current_epoch = 0
-        success_list = []
+        results_list = []
 
         with tqdm(total = self.max_episodes) as pbar:
+            # Episodes cycle
             while current_episode != self.max_episodes:
                 pbar.update(1)
                 current_episode += 1
-
-                if(self.model.is_success_state()):
-                    success_item = { "episode": current_episode, "epoch": current_epoch }
-                    success_list.append(success_item)
 
                 # Initial state
                 self.model.reset_state()
                 current_epoch = 0
                 
+                # Epoches cycle
                 while current_epoch != self.max_epoches:
                     current_epoch += 1
 
@@ -50,8 +48,15 @@ class Agent:
                         break
 
                     self.execute_epoch()
+
+                # Updating results
+                results_list.append({ 
+                    "episode": current_episode, 
+                    "epoch": current_epoch, 
+                    "state": self.model.get_current_state()
+                })
         
-        return success_list
+        return results_list
 
     # Use the neural network to get a new acceleration
     # from the current state
