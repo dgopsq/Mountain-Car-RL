@@ -4,7 +4,7 @@ import random as rn
 from tqdm import tqdm
 
 class Agent:
-    def __init__(self, net, model, actions, learning_rate, discount_factor, greed_factor):
+    def __init__(self, net, model, actions, max_episodes, max_epoches, greed_factor, learning_rate = 0.1, discount_factor = 0.99):
         # 2 inputs, len(actions) * 2 hidden nodes, len(actions) output
         self.net = net
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr = learning_rate)
@@ -22,8 +22,8 @@ class Agent:
         self.actions = actions
 
         # Max learning cycle
-        self.max_episodes = 100
-        self.max_epochs = 100000
+        self.max_episodes = max_episodes
+        self.max_epoches = max_epoches
 
     def learn(self):
         current_episode = 0
@@ -43,7 +43,7 @@ class Agent:
                 self.model.reset_state()
                 current_epoch = 0
                 
-                while current_epoch != self.max_epochs:
+                while current_epoch != self.max_epoches:
                     current_epoch += 1
 
                     if(self.model.is_final_state()):

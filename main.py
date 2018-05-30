@@ -19,8 +19,8 @@ agent = Agent(
     net, # NeuralNetwork class
     model,
     actions, # Actions array (after discretization)
-    0.1, # Learning rate
-    0.99, # Discount factor
+    100, # Max number of episodes
+    100000, # Max number of epoches per episode
     0.2 # Greed factor
 )
 
