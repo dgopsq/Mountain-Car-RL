@@ -7,7 +7,7 @@ class Agent:
     def __init__(self, net, model, actions, max_episodes, max_epoches, greed_factor, learning_rate = 0.1, discount_factor = 0.99):
         # 2 inputs, len(actions) * 2 hidden nodes, len(actions) output
         self.net = net
-        self.optimizer = torch.optim.Adam(self.net.parameters(), lr = learning_rate)
+        self.optimizer = torch.optim.SGD(self.net.parameters(), lr = learning_rate)
         self.loss_func = nn.SmoothL1Loss()
 
         # Q-function's discount factor
