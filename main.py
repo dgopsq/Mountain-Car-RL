@@ -1,12 +1,16 @@
-from numpy import linspace
+import torch
+import numpy as np
 
 from src.custom_net import CustomNet
 from src.model import Model
 from src.agent import Agent
 
+torch.manual_seed(1); 
+np.random.seed(1)
+
 position_bounds = (-1.2, 0.5)
 velocity_bounds = (-0.07, 0.07)
-actions = linspace(-1.0, 1.0, 4)
+actions = np.linspace(-1.0, 1.0, 4)
 
 net = CustomNet(2, len(actions))
 
