@@ -15,7 +15,7 @@ class Model:
         return self.state
 
     def get_reward(self):
-        if(self.state["position"] == self.position_bounds[1]):
+        if(self.state["position"] >= self.position_bounds[1]):
             return 10.0
         else:
             return -1.0
@@ -40,13 +40,14 @@ class Model:
     def _generate_next_state(self, acceleration):
         next_velocity = self._calc_velocity(self.state, acceleration)
         next_position = self._calc_position(self.state, next_velocity)
+
+        if(next_position == self.position_bounds[0] and next_velocity < 0):
+            next_velocity = 0
+
         return self._generate_state(next_position, next_velocity)
 
     def _calc_velocity(self, state, acceleration):
-        if(state["position"] in self.position_bounds):
-            return 0
-
-        next_velocity = state["velocity"] + (0.001 * acceleration) - (0.0025 * cos(3 * state["position"]))
+        next_velocity = state["velocity"] + (0.001 * acceleration) + (cos(3 * state["position"]) * (-0.0025))
         next_velocity = self._check_bounds(next_velocity, self.velocity_bounds)
         return next_velocity
 

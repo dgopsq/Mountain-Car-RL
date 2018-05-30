@@ -4,11 +4,10 @@ import random as rn
 from tqdm import tqdm
 
 class Agent:
-    def __init__(self, net, model, actions, max_episodes, max_epoches, greed_factor, learning_rate = 0.1, discount_factor = 0.99):
-        # 2 inputs, len(actions) * 2 hidden nodes, len(actions) output
-        self.net = net
-        self.optimizer = torch.optim.SGD(self.net.parameters(), lr = learning_rate)
-        self.loss_func = nn.SmoothL1Loss()
+    def __init__(self, policy, model, actions, max_episodes, max_epoches, greed_factor, learning_rate = 0.1, discount_factor = 0.99):
+        self.policy = policy
+        self.loss_func = nn.MSELoss()
+        self.optimizer = torch.optim.SGD(self.policy.parameters(), lr = learning_rate)
 
         # Q-function's discount factor
         self.gamma = discount_factor
@@ -28,11 +27,12 @@ class Agent:
     def learn(self):
         current_episode = 0
         current_epoch = 0
-        results_list = []
+        
+        results = []
 
         with tqdm(total = self.max_episodes) as pbar:
             # Episodes cycle
-            while current_episode != self.max_episodes:
+            while current_episode < self.max_episodes:
                 pbar.update(1)
                 current_episode += 1
 
@@ -41,22 +41,22 @@ class Agent:
                 current_epoch = 0
                 
                 # Epoches cycle
-                while current_epoch != self.max_epoches:
+                while current_epoch < self.max_epoches:
                     current_epoch += 1
 
-                    if(self.model.is_final_state()):
+                    if(self.model.is_success_state()):
                         break
 
-                    self.execute_epoch()
+                    next_state = self.execute_epoch()
 
                 # Updating results
-                results_list.append({ 
+                results.append({ 
                     "episode": current_episode, 
                     "epoch": current_epoch, 
                     "state": self.model.get_current_state()
                 })
         
-        return results_list
+        return results
 
     # Use the neural network to get a new acceleration
     # from the current state
@@ -67,11 +67,12 @@ class Agent:
         current_state_tensor = torch.tensor([
             current_state["position"],
             current_state["velocity"]
-        ])
-
+        ]).type(torch.FloatTensor)
+        
         # The action to take
-        current_q_values = self.net(current_state_tensor)
-        action_index = self._get_next_action(current_q_values)
+        current_q_values = self.policy(current_state_tensor)
+        best_action = current_q_values.max(0)[1]
+        action_index = self._get_next_action(best_action)
         action = self.actions[action_index]
 
         # The new state
@@ -82,20 +83,28 @@ class Agent:
         next_state_tensor = torch.tensor([
             next_state["position"],
             next_state["velocity"]
-        ])
+        ]).type(torch.FloatTensor)
 
-        max_q_next_action = self.net(next_state_tensor).detach().max(0)[0]
-        expected_q_value = reward + (self.epsilon * max_q_next_action)
+        # Max Q value in the next state
+        next_q_values = self.policy(next_state_tensor).detach()
+        next_max_q_value = next_q_values.max(0)[0]
+
+        # Getting the expected Q value
+        expected_q_values = current_q_values.detach().clone()
+        expected_q_values[action_index] = reward + (next_max_q_value * self.gamma)
 
         # Learning the network
-        loss = self.loss_func(current_q_values[action_index], expected_q_value)
+        loss = self.loss_func(current_q_values, expected_q_values)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
+        return next_state
     
     # Return next action's index using epsilon-greedy
-    def _get_next_action(self, q_values):
-        if(rn.random() < self.epsilon):
+    def _get_next_action(self, best_action):
+        rnd = rn.random()
+        if(rnd < self.epsilon):
             return rn.randint(0, len(self.actions) - 1)
         else:
-            return q_values.max(0)[1]
+            return best_action
