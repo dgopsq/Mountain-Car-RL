@@ -4,10 +4,11 @@ import random as rn
 from tqdm import tqdm
 
 class Agent:
-    def __init__(self, policy, model, actions, max_episodes, max_epoches, greed_factor, learning_rate = 0.1, discount_factor = 0.99):
+    def __init__(self, policy, model, actions, max_episodes, max_epoches, greed_factor, learning_rate = 0.001, discount_factor = 0.99):
         self.policy = policy
         self.loss_func = nn.MSELoss()
         self.optimizer = torch.optim.SGD(self.policy.parameters(), lr = learning_rate)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size = 1, gamma = 0.9)
 
         # Q-function's discount factor
         self.gamma = discount_factor
@@ -45,6 +46,11 @@ class Agent:
                     current_epoch += 1
 
                     if(self.model.is_success_state()):
+                        # Adjust the learning rate
+                        self.scheduler.step()
+
+                        # Lower the epsilon value
+                        self.epsilon *= 0.99
                         break
 
                     next_state = self.execute_epoch()
@@ -62,11 +68,12 @@ class Agent:
     # from the current state
     def execute_epoch(self):
         current_state = self.model.get_current_state()
+        
 
         # The input state
         current_state_tensor = torch.tensor([
-            current_state["position"],
-            current_state["velocity"]
+            current_state[0],
+            current_state[1]
         ]).type(torch.FloatTensor)
         
         # The action to take
@@ -81,8 +88,8 @@ class Agent:
         
         # The new state max Q action
         next_state_tensor = torch.tensor([
-            next_state["position"],
-            next_state["velocity"]
+            next_state[0],
+            next_state[1]
         ]).type(torch.FloatTensor)
 
         # Max Q value in the next state

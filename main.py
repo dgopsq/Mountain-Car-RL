@@ -7,10 +7,13 @@ from src.policy import Policy
 from src.model import Model
 from src.agent import Agent
 
+torch.manual_seed(1)
+np.random.seed(1)
+
 # Setting up bounds
 position_bounds = (-1.2, 0.5)
 velocity_bounds = (-0.07, 0.07)
-actions = np.linspace(-1.0, 1.0, 3)
+actions = [-1.0, 0.0, 1.0]
 
 # Instanced Policy
 policy = Policy(2, len(actions))
@@ -21,13 +24,14 @@ model = Model(
     velocity_bounds # Velocity bounds
 )
 
+
 # Instanced Agent
 agent = Agent(
     policy, # NeuralNetwork class
     model,
     actions, # Actions array (after discretization)
-    100, # Max number of episodes
-    100000, # Max number of epoches per episode
+    3000, # Max number of episodes
+    200, # Max number of epoches per episode
     0.3 # Greed factor
 )
 
@@ -35,12 +39,15 @@ agent = Agent(
 results = agent.learn()
 
 # Success episodes
-success_results = [x for x in results if x["state"]["position"] == position_bounds[1]]
+success_results = [x for x in results if x["state"][0] >= position_bounds[1]]
 print("Number of successful episodes: {0}".format(len(success_results)))
+
+#for r in results:
+#    print(r)
 
 # Plotting results
 plt.figure(2, figsize=[10,5])
-positions = [x["state"]["position"] for x in results]
+positions = [x["state"][0] for x in results]
 p = pd.Series(positions)
 ma = p.rolling(10).mean()
 plt.plot(p)
