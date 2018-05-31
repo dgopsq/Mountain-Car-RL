@@ -50,7 +50,7 @@ class Agent:
                         self.scheduler.step()
 
                         # Lower the epsilon value
-                        self.epsilon *= 0.99
+                        self.epsilon = self.epsilon * 0.99
                         break
 
                     next_state = self.execute_epoch()
