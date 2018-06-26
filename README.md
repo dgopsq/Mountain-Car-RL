@@ -1,6 +1,6 @@
 # Mountain Car RL
 The classic *Reinforcement Learning* problem solved using a simple Feedforward Neural Network with PyTorch.
-This was an assignment in the Decision Model course at **University of Milano-Bicocca**.
+This was an assignment in the Decision Models course at **University of Milano-Bicocca**.
 
 ## Assignment
 The assignment's text is in the file `assignment.pdf`.
