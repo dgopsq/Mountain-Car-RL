@@ -1,5 +1,5 @@
 # Mountain Car RL
-The classic *Reinforcement Learning* problem solved using a simple Feedforward Neural Network with discrete actions.
+The classic *Reinforcement Learning* problem solved using a simple Feedforward Neural Network with PyTorch.
 This was an assignment in the Decision Model course at **University of Milano-Bicocca**.
 
 ## Assignment
